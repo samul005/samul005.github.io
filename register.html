@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Ultimate Hangman Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="assets/images/logo.png" alt="Game Logo" class="auth-logo">
+                <h1>Create Account</h1>
+            </div>
+
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="registerUsername" 
+                               pattern="[A-Za-z0-9_]{3,16}" 
+                               title="3-16 characters, letters, numbers and underscore only"
+                               required>
+                        <span class="username-availability"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="registerPassword" 
+                               pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
+                               title="Minimum 8 characters, at least one letter and one number"
+                               required>
+                        <button type="button" class="toggle-password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="confirmPassword" required>
+                        <button type="button" class="toggle-password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="password-strength">
+                    <div class="strength-meter"></div>
+                    <ul class="strength-requirements">
+                        <li data-requirement="length">
+                            <i class="fas fa-circle"></i> 8+ characters
+                        </li>
+                        <li data-requirement="letter">
+                            <i class="fas fa-circle"></i> At least one letter
+                        </li>
+                        <li data-requirement="number">
+                            <i class="fas fa-circle"></i> At least one number
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="form-group">
+                    <label class="terms-checkbox">
+                        <input type="checkbox" id="agreeTerms" required>
+                        <span>I agree to the 
+                            <a href="terms.html" target="_blank">Terms of Service</a> 
+                            and 
+                            <a href="privacy.html" target="_blank">Privacy Policy</a>
+                        </span>
+                    </label>
+                </div>
+
+                <div id="authError" class="auth-error"></div>
+
+                <button type="submit" class="auth-button">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <div class="social-login">
+                <p>Or register with</p>
+                <div class="social-buttons">
+                    <button class="social-btn google">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                    <button class="social-btn github">
+                        <i class="fab fa-github"></i> GitHub
+                    </button>
+                </div>
+            </div>
+
+            <div class="auth-footer">
+                <p>Already have an account? 
+                    <a href="login.html">Login</a>
+                </p>
+                <a href="index.html" class="back-home">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsroeAn7X_hGR4CNCinC4X4xaLUBc2gxw",
+            authDomain: "hangman-a1b78.firebaseapp.com",
+            databaseURL: "https://hangman-a1b78-default-rtdb.firebaseio.com",
+            projectId: "hangman-a1b78",
+            storageBucket: "hangman-a1b78.firebasestorage.app",
+            messagingSenderId: "18850996844",
+            appId: "1:18850996844:web:f7174bcf9a6d15368b2e49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        window.auth = auth;
+    </script>
+
+    <!-- Authentication Scripts -->
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/register.js"></script>
+</body>
+                          </html>
