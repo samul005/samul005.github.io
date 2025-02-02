@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Ultimate Hangman Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-info">
+                <img src="../assets/images/admin-avatar.png" alt="Admin Avatar" class="admin-avatar">
+                <div class="admin-details">
+                    <span class="admin-name">samul005</span>
+                    <span class="admin-role">Super Admin</span>
+                </div>
+            </div>
+            
+            <nav class="admin-nav">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="#users" class="nav-item" data-section="users">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="#questions" class="nav-item" data-section="questions">
+                    <i class="fas fa-question-circle"></i> Questions
+                </a>
+                <a href="#reports" class="nav-item" data-section="reports">
+                    <i class="fas fa-flag"></i> Reports
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+
+            <div class="admin-footer">
+                <span class="timestamp">🕒 2025-02-02 04:26:02</span>
+                <a href="../index.html" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Exit Admin
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="admin-section active">
+                <h1>Dashboard</h1>
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Users</h3>
+                            <span id="totalUsers">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-gamepad"></i></div>
+                        <div class="stat-info">
+                            <h3>Games Played</h3>
+                            <span id="totalGames">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                        <div class="stat-info">
+                            <h3>Coins in Circulation</h3>
+                            <span id="totalCoins">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-store"></i></div>
+                        <div class="stat-info">
+                            <h3>Store Transactions</h3>
+                            <span id="totalTransactions">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>User Activity</h3>
+                        <canvas id="userActivityChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Game Mode Distribution</h3>
+                        <canvas id="gameModeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="activity-section">
+                    <h2>Recent Activity</h2>
+                    <div class="activity-list" id="recentActivity"></div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users" class="admin-section">
+                <h1>User Management</h1>
+                
+                <div class="section-header">
+                    <div class="search-bar">
+                        <input type="text" id="userSearch" placeholder="Search users...">
+                        <button class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <button class="action-btn" id="exportUsers">
+                        <i class="fas fa-download"></i> Export Users
+                    </button>
+                </div>
+
+                <div class="users-table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Username</th>
+                                <th>Level</th>
+                                <th>Games</th>
+                                <th>Coins</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="usersPagination"></div>
+            </section>
+
+            <!-- Questions Section -->
+            <section id="questions" class="admin-section">
+                <h1>Question Management</h1>
+
+                <div class="section-header">
+                    <button class="action-btn" id="addQuestion">
+                        <i class="fas fa-plus"></i> Add Question
+                    </button>
+                    <button class="action-btn" id="importQuestions">
+                        <i class="fas fa-file-import"></i> Import
+                    </button>
+                </div>
+
+                <div class="questions-grid" id="questionsGrid"></div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="admin-section">
+                <h1>Reports & Analytics</h1>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <h3>User Growth</h3>
+                        <canvas id="userGrowthChart"></canvas>
+                    </div>
+                    <div class="report-card">
+                        <h3>Revenue Analytics</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="report-card">
+                        <h3>Game Statistics</h3>
+                        <canvas id="gameStatsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="admin-section">
+                <h1>System Settings</h1>
+
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Game Settings</h3>
+                        <div class="setting-item">
+                            <label>Default Lives</label>
+                            <input type="number" id="defaultLives" min="1" max="10">
+                        </div>
+                        <div class="setting-item">
+                            <label>Time Limit (seconds)</label>
+                            <input type="number" id="timeLimit" min="30" max="300">
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Store Settings</h3>
+                        <div class="setting-item">
+                            <label>Daily Coin Limit</label>
+                            <input type="number" id="coinLimit">
+                        </div>
+                        <div class="setting-item">
+                            <label>Power-up Costs</label>
+                            <input type="number" id="powerupCost">
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>System Settings</h3>
+                        <div class="setting-item">
+                            <label>Maintenance Mode</label>
+                            <label class="switch">
+                                <input type="checkbox" id="maintenanceMode">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Auto Backup</label>
+                            <label class="switch">
+                                <input type="checkbox" id="autoBackup">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="questionModal">
+        <div class="modal-content">
+            <h2>Add New Question</h2>
+            <form id="questionForm">
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="questionCategory" required>
+                </div>
+                <div class="form-group">
+                    <label>Question</label>
+                    <textarea id="questionText" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Answer</label>
+                    <input type="text" id="questionAnswer" required>
+                </div>
+                <div class="form-group">
+                    <label>Difficulty</label>
+                    <select id="questionDifficulty">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">Save Question</button>
+                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsroeAn7X_hGR4CNCinC4X4xaLUBc2gxw",
+            authDomain: "hangman-a1b78.firebaseapp.com",
+            databaseURL: "https://hangman-a1b78-default-rtdb.firebaseio.com",
+            projectId: "hangman-a1b78",
+            storageBucket: "hangman-a1b78.firebasestorage.app",
+            messagingSenderId: "18850996844",
+            appId: "1:18850996844:web:f7174bcf9a6d15368b2e49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Admin Scripts -->
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>
