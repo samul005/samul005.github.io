@@ -1,0 +1,37 @@
+hangman/
+├── index.html
+├── game.html
+├── store.html
+├── profile.html
+├── admin/
+│   ├── index.html
+│   └── css/
+│       └── admin.css
+├── css/
+│   ├── style.css
+│   ├── game.css
+│   └── store.css
+├── js/
+│   ├── app.js
+│   ├── auth.js
+│   ├── game.js
+│   ├── store.js
+│   ├── profile.js
+│   ├── question-manager.js
+│   ├── power-ups.js
+│   └── utils.js
+├── assets/
+│   ├── images/
+│   │   ├── logo.png
+│   │   ├── backgrounds/
+│   │   └── icons/
+│   ├── sounds/
+│   │   ├── correct.mp3
+│   │   ├── wrong.mp3
+│   │   └── win.mp3
+│   └── themes/
+│       ├── classic/
+│       ├── neon/
+│       └── space/
+├── firebase.json
+└── README.md

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Hangman Challenge 🎯</title>
+    <meta name="description" content="Modern multiplayer hangman game with power-ups and multiple game modes">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="assets/images/logo.png" alt="Hangman Logo">
+                <h1>Ultimate Hangman</h1>
+            </div>
+            <div class="user-info">
+                <span class="timestamp">🕒 2025-02-01 16:32:47</span>
+                <span class="username">👤 samul005</span>
+                <button id="themeToggle" class="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Game Modes Section -->
+        <section class="game-modes">
+            <h2>Choose Your Game Mode</h2>
+            <div class="modes-grid">
+                <div class="mode-card" data-mode="classic">
+                    <i class="fas fa-gamepad"></i>
+                    <h3>Classic Mode</h3>
+                    <p>Traditional Hangman gameplay</p>
+                </div>
+                <div class="mode-card" data-mode="lion">
+                    <i class="fas fa-crown"></i>
+                    <h3>Lion Mode</h3>
+                    <p>4-letter words challenge</p>
+                </div>
+                <div class="mode-card time-challenge" data-mode="time">
+                    <i class="fas fa-clock"></i>
+                    <h3>Time Challenge</h3>
+                    <div class="difficulty-buttons">
+                        <button data-difficulty="simple">Simple</button>
+                        <button data-difficulty="normal">Normal</button>
+                        <button data-difficulty="hard">Hard</button>
+                    </div>
+                </div>
+                <div class="mode-card" data-mode="endless">
+                    <i class="fas fa-infinity"></i>
+                    <h3>Endless Mode</h3>
+                    <p>Play until you can't anymore!</p>
+                </div>
+                <div class="mode-card" data-mode="extreme">
+                    <i class="fas fa-skull"></i>
+                    <h3>Extreme Mode</h3>
+                    <p>For the brave ones</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <div class="action-card store">
+                <i class="fas fa-store"></i>
+                <h3>Store</h3>
+                <p>Get power-ups and themes</p>
+            </div>
+            <div class="action-card profile">
+                <i class="fas fa-user"></i>
+                <h3>Profile</h3>
+                <p>View your stats</p>
+            </div>
+            <div class="action-card daily">
+                <i class="fas fa-gift"></i>
+                <h3>Daily Reward</h3>
+                <p>Claim your free power-up!</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Ultimate Hangman. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-discord"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsroeAn7X_hGR4CNCinC4X4xaLUBc2gxw",
+            authDomain: "hangman-a1b78.firebaseapp.com",
+            databaseURL: "https://hangman-a1b78-default-rtdb.firebaseio.com",
+            projectId: "hangman-a1b78",
+            storageBucket: "hangman-a1b78.firebasestorage.app",
+            messagingSenderId: "18850996844",
+            appId: "1:18850996844:web:f7174bcf9a6d15368b2e49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+    </script>
+
+    <!-- Application Scripts -->
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/auth.js"></script>
+</body>
+</html>

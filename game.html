@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Hangman | Ultimate Hangman Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <!-- Game Header -->
+    <header class="game-header">
+        <div class="header-info">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="game-stats">
+                <span class="timestamp">🕒 2025-02-01 16:35:10</span>
+                <span class="username">👤 samul005</span>
+                <span class="level">Level: <span id="currentLevel">1</span></span>
+                <span class="coins">🌀 <span id="currentCoins">0</span></span>
+            </div>
+        </div>
+        <div class="mode-info" id="modeInfo"></div>
+    </header>
+
+    <!-- Game Container -->
+    <main class="game-container">
+        <div class="question-section">
+            <div class="category-badge" id="categoryBadge"></div>
+            <h2 class="question-text" id="questionText"></h2>
+            <div class="word-display" id="wordDisplay"></div>
+        </div>
+
+        <div class="game-status">
+            <div class="lives">
+                <span id="livesIcon">❤️</span>
+                <span id="livesCount">6</span>
+            </div>
+            <div class="timer" id="timer"></div>
+        </div>
+
+        <div class="keyboard" id="keyboard"></div>
+
+        <div class="power-ups-panel" id="powerUpsPanel">
+            <h3>Power-Ups</h3>
+            <div class="power-ups-grid" id="powerUpsGrid"></div>
+        </div>
+    </main>
+
+    <!-- Result Modal -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <div class="result-message" id="resultMessage"></div>
+            <div class="result-stats">
+                <div class="stat">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="finalScore">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Coins Earned</span>
+                    <span class="stat-value" id="coinsEarned">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Time</span>
+                    <span class="stat-value" id="finalTime">0:00</span>
+                </div>
+            </div>
+            <div class="result-buttons">
+                <button id="nextLevelBtn" class="next-btn">Next Level</button>
+                <button id="retryBtn" class="retry-btn">Try Again</button>
+                <button id="homeBtn" class="home-btn">Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Power-up Effect Container -->
+    <div id="effectContainer" class="effect-container"></div>
+
+    <!-- Sound Effects (Preload) -->
+    <audio id="correctSound" src="assets/sounds/correct.mp3" preload="auto"></audio>
+    <audio id="wrongSound" src="assets/sounds/wrong.mp3" preload="auto"></audio>
+    <audio id="winSound" src="assets/sounds/win.mp3" preload="auto"></audio>
+
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsroeAn7X_hGR4CNCinC4X4xaLUBc2gxw",
+            authDomain: "hangman-a1b78.firebaseapp.com",
+            databaseURL: "https://hangman-a1b78-default-rtdb.firebaseio.com",
+            projectId: "hangman-a1b78",
+            storageBucket: "hangman-a1b78.firebasestorage.app",
+            messagingSenderId: "18850996844",
+            appId: "1:18850996844:web:f7174bcf9a6d15368b2e49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+    </script>
+
+    <!-- Game Scripts -->
+    <script type="module" src="js/game.js"></script>
+    <script type="module" src="js/power-ups.js"></script>
+</body>
+</html>
