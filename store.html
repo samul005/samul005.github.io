@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store | Ultimate Hangman Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/store.css">
+</head>
+<body>
+    <header class="store-header">
+        <div class="header-content">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1>Store</h1>
+            <div class="user-info">
+                <span class="timestamp">🕒 2025-02-01 16:39:53</span>
+                <span class="username">👤 samul005</span>
+                <span class="coins">🌀 <span id="userCoins">0</span></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="store-container">
+        <div class="store-tabs">
+            <button class="tab-btn active" data-tab="powerups">
+                <i class="fas fa-bolt"></i> Power-ups
+            </button>
+            <button class="tab-btn" data-tab="themes">
+                <i class="fas fa-paint-brush"></i> Themes
+            </button>
+            <button class="tab-btn" data-tab="avatars">
+                <i class="fas fa-user-circle"></i> Avatars
+            </button>
+        </div>
+
+        <div class="tab-content active" id="powerupsTab">
+            <div class="store-grid" id="powerupsGrid"></div>
+        </div>
+
+        <div class="tab-content" id="themesTab">
+            <div class="store-grid" id="themesGrid"></div>
+        </div>
+
+        <div class="tab-content" id="avatarsTab">
+            <div class="store-grid" id="avatarsGrid"></div>
+        </div>
+    </main>
+
+    <!-- Purchase Modal -->
+    <div class="modal" id="purchaseModal">
+        <div class="modal-content">
+            <h2>Confirm Purchase</h2>
+            <div class="item-preview" id="itemPreview"></div>
+            <div class="price-info" id="priceInfo"></div>
+            <div class="modal-buttons">
+                <button id="confirmPurchase" class="confirm-btn">
+                    Confirm Purchase
+                </button>
+                <button id="cancelPurchase" class="cancel-btn">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Animation -->
+    <div class="success-animation" id="successAnimation">
+        <div class="success-content">
+            <i class="fas fa-check-circle"></i>
+            <p>Purchase Successful!</p>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsroeAn7X_hGR4CNCinC4X4xaLUBc2gxw",
+            authDomain: "hangman-a1b78.firebaseapp.com",
+            databaseURL: "https://hangman-a1b78-default-rtdb.firebaseio.com",
+            projectId: "hangman-a1b78",
+            storageBucket: "hangman-a1b78.firebasestorage.app",
+            messagingSenderId: "18850996844",
+            appId: "1:18850996844:web:f7174bcf9a6d15368b2e49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+    </script>
+
+    <!-- Store Scripts -->
+    <script type="module" src="js/store.js"></script>
+</body>
+              </html>
