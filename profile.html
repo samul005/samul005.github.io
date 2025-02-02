@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | Ultimate Hangman Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+    <header class="profile-header">
+        <div class="header-content">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="user-info">
+                <span class="timestamp">🕒 2025-02-01 16:44:48</span>
+                <span class="username">👤 samul005</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <div class="profile-content">
+            <!-- User Stats Card -->
+            <section class="stats-card">
+                <div class="avatar-section">
+                    <div class="avatar" id="currentAvatar">
+                        <img src="assets/images/default-avatar.png" alt="User Avatar">
+                        <button class="change-avatar-btn">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <div class="user-level">
+                        <span class="level-number" id="userLevel">1</span>
+                        <div class="level-progress">
+                            <div class="progress-bar" id="levelProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <i class="fas fa-star"></i>
+                        <span class="stat-value" id="totalScore">0</span>
+                        <span class="stat-label">Total Score</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-coins"></i>
+                        <span class="stat-value" id="totalCoins">0</span>
+                        <span class="stat-label">Coins</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-trophy"></i>
+                        <span class="stat-value" id="gamesWon">0</span>
+                        <span class="stat-label">Games Won</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span class="stat-value" id="timePlayed">0h</span>
+                        <span class="stat-label">Time Played</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Achievements Section -->
+            <section class="achievements-section">
+                <h2>Achievements</h2>
+                <div class="achievements-grid" id="achievementsGrid"></div>
+            </section>
+
+            <!-- Inventory Section -->
+            <section class="inventory-section">
+                <h2>Inventory</h2>
+                <div class="inventory-tabs">
+                    <button class="tab-btn active" data-tab="powerups">
+                        Power-ups
+                    </button>
+                    <button class="tab-btn" data-tab="themes">
+                        Themes
+                    </button>
+                    <button class="tab-btn" data-tab="avatars">
+                        Avatars
+                    </button>
+                </div>
+                <div class="inventory-content" id="inventoryContent"></div>
+            </section>
+
+            <!-- Game History -->
+            <section class="history-section">
+                <h2>Recent Games</h2>
+                <div class="history-list" id="gameHistory"></div>
+            </section>
+
+            <!-- Settings -->
+            <section class="settings-section">
+                <h2>Settings</h2>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <span class="setting-label">Sound Effects</span>
+                        <label class="switch">
+                            <input type="checkbox" id="soundToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Music</span>
+                        <label class="switch">
+                            <input type="checkbox" id="musicToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Theme</span>
+                        <select id="themeSelect">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Language</span>
+                        <select id="languageSelect">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Avatar Selection Modal -->
+    <div class="modal" id="avatarModal">
+        <div class="modal-content">
+            <h2>Choose Avatar</h2>
+            <div class="avatar-grid" id="avatarGrid"></div>
+            <div class="modal-buttons">
+                <button id="saveAvatar" class="save-btn">Save</button>
+                <button id="cancelAvatar" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsroeAn7X_hGR4CNCinC4X4xaLUBc2gxw",
+            authDomain: "hangman-a1b78.firebaseapp.com",
+            databaseURL: "https://hangman-a1b78-default-rtdb.firebaseio.com",
+            projectId: "hangman-a1b78",
+            storageBucket: "hangman-a1b78.firebasestorage.app",
+            messagingSenderId: "18850996844",
+            appId: "1:18850996844:web:f7174bcf9a6d15368b2e49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+    </script>
+
+    <!-- Profile Scripts -->
+    <script type="module" src="js/profile.js"></script>
+</body>
+                          </html>
