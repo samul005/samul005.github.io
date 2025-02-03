@@ -181,3 +181,246 @@ class DatabaseMonitorDashboard {
             .get();
 
         return snapshot.docs.map(doc => doc.data());
+        getLast24Hours() {
+        const hours = [];
+        for (let i = 23; i >= 0; i--) {
+            const date = new Date();
+            date.setHours(date.getHours() - i);
+            hours.push(date.toLocaleTimeString());
+        }
+        return hours;
+    }
+
+    async exportMonitoringData() {
+        try {
+            const data = await this.fetchMonitoringData();
+            const exportData = {
+                timestamp: "2025-02-02 05:15:07",
+                exportedBy: "samul005",
+                metrics: {
+                    queries: Object.fromEntries(data.queryMetrics),
+                    errors: Object.fromEntries(data.errorMetrics)
+                },
+                summary: {
+                    totalQueries: this.monitor.calculateTotalQueries(),
+                    averageQueryTime: this.monitor.calculateAverageQueryTime(),
+                    errorRate: this.monitor.calculateErrorRate(),
+                    slowQueryRate: this.monitor.calculateSlowQueryRate()
+                },
+                alerts: data.alerts
+            };
+
+            // Convert to CSV
+            const csv = this.convertToCSV(exportData);
+            this.downloadCSV(csv, `database-metrics-${this.timestamp}.csv`);
+        } catch (error) {
+            console.error('Error exporting monitoring data:', error);
+        }
+    }
+
+    convertToCSV(data) {
+        const rows = [
+            // Headers
+            ['Metric', 'Value', 'Timestamp'],
+            
+            // Summary metrics
+            ['Total Queries', data.summary.totalQueries, this.timestamp],
+            ['Average Query Time (ms)', data.summary.averageQueryTime.toFixed(2), this.timestamp],
+            ['Error Rate (%)', (data.summary.errorRate * 100).toFixed(2), this.timestamp],
+            ['Slow Query Rate (%)', (data.summary.slowQueryRate * 100).toFixed(2), this.timestamp],
+            
+            // Separator
+            [],
+            ['Collection', 'Query Count', 'Average Duration', 'Slow Queries'],
+            
+            // Query metrics
+            ...Object.entries(data.metrics.queries).map(([collection, stats]) => [
+                collection,
+                stats.count,
+                (stats.totalDuration / stats.count).toFixed(2),
+                stats.slowQueries
+            ]),
+            
+            // Separator
+            [],
+            ['Error Type', 'Count', 'First Seen', 'Last Seen'],
+            
+            // Error metrics
+            ...Object.entries(data.metrics.errors).map(([type, stats]) => [
+                type,
+                stats.count,
+                stats.firstSeen,
+                stats.lastSeen
+            ])
+        ];
+
+        return rows.map(row => row.join(',')).join('\n');
+    }
+
+    downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    createAlertRule() {
+        const form = document.getElementById('alertRuleForm');
+        const rule = {
+            metric: form.metric.value,
+            condition: form.condition.value,
+            threshold: parseFloat(form.threshold.value),
+            interval: parseInt(form.interval.value),
+            notifications: {
+                email: form.emailNotification.checked,
+                slack: form.slackNotification.checked
+            },
+            created: this.timestamp,
+            createdBy: this.currentUser,
+            enabled: true
+        };
+
+        this.saveAlertRule(rule);
+    }
+
+    async saveAlertRule(rule) {
+        try {
+            await this.monitor.db.collection('alert_rules').add(rule);
+            this.showNotification('Alert rule created successfully', 'success');
+            this.loadAlertRules();
+        } catch (error) {
+            console.error('Error saving alert rule:', error);
+            this.showNotification('Error creating alert rule', 'error');
+        }
+    }
+
+    async loadAlertRules() {
+        try {
+            const snapshot = await this.monitor.db.collection('alert_rules')
+                .where('enabled', '==', true)
+                .get();
+
+            const rulesContainer = document.getElementById('alertRulesContainer');
+            rulesContainer.innerHTML = snapshot.docs.map(doc => `
+                <div class="alert-rule" data-id="${doc.id}">
+                    <div class="rule-header">
+                        <h4>${doc.data().metric}</h4>
+                        <div class="rule-actions">
+                            <button onclick="editRule('${doc.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteRule('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p>Condition: ${doc.data().condition} ${doc.data().threshold}</p>
+                    <p>Check Interval: ${doc.data().interval} minutes</p>
+                    <p>Created: ${doc.data().created}</p>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading alert rules:', error);
+        }
+    }
+
+    showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    async generateReport(reportType) {
+        try {
+            let reportData;
+            switch (reportType) {
+                case 'daily':
+                    reportData = await this.generateDailyReport();
+                    break;
+                case 'weekly':
+                    reportData = await this.generateWeeklyReport();
+                    break;
+                case 'monthly':
+                    reportData = await this.generateMonthlyReport();
+                    break;
+                default:
+                    throw new Error('Invalid report type');
+            }
+
+            // Create report document
+            const report = {
+                type: reportType,
+                data: reportData,
+                generated: this.timestamp,
+                generatedBy: this.currentUser
+            };
+
+            await this.monitor.db.collection('reports').add(report);
+            this.showNotification(`${reportType} report generated successfully`, 'success');
+        } catch (error) {
+            console.error('Error generating report:', error);
+            this.showNotification(`Error generating ${reportType} report`, 'error');
+        }
+    }
+
+    async generateDailyReport() {
+        const startTime = new Date();
+        startTime.setHours(0, 0, 0, 0);
+
+        return this.aggregateMetrics(startTime);
+    }
+
+    async generateWeeklyReport() {
+        const startTime = new Date();
+        startTime.setDate(startTime.getDate() - 7);
+        
+        return this.aggregateMetrics(startTime);
+    }
+
+    async generateMonthlyReport() {
+        const startTime = new Date();
+        startTime.setMonth(startTime.getMonth() - 1);
+        
+        return this.aggregateMetrics(startTime);
+    }
+
+    async aggregateMetrics(startTime) {
+        const snapshot = await this.monitor.db.collection('monitoring_reports')
+            .where('timestamp', '>=', startTime.toISOString())
+            .get();
+
+        return snapshot.docs.reduce((acc, doc) => {
+            const data = doc.data();
+            return {
+                totalQueries: acc.totalQueries + data.summary.totalQueries,
+                averageQueryTime: acc.averageQueryTime + data.summary.averageQueryTime,
+                errorCount: acc.errorCount + Object.values(data.metrics.errors)
+                    .reduce((sum, { count }) => sum + count, 0),
+                slowQueryCount: acc.slowQueryCount + Object.values(data.metrics.queries)
+                    .reduce((sum, { slowQueries }) => sum + slowQueries, 0)
+            };
+        }, {
+            totalQueries: 0,
+            averageQueryTime: 0,
+            errorCount: 0,
+            slowQueryCount: 0
+        });
+    }
+}
+
+// Initialize dashboard when document is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.dbMonitorDashboard = new DatabaseMonitorDashboard();
+});
+
+// Export dashboard instance for global access
+export { DatabaseMonitorDashboard };
