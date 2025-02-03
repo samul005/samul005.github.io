@@ -201,4 +201,108 @@ class AuthRoles {
             }
 
             // Remove role from database
-            await this.db.collection('custom
+            await this.db.collection('custom_roles').doc(roleName).delete();
+
+            // Remove role from local roles
+            delete this.roles[roleName];
+
+            // Update users with this role to default role
+            await this.updateUsersWithRole(roleName);
+
+            await this.logRoleDelete(roleName);
+        } catch (error) {
+            await this.logRoleError(null, roleName, error);
+            throw error;
+        }
+    }
+
+    isProtectedRole(roleName) {
+        return ['admin', 'moderator', 'user', 'guest'].includes(roleName);
+    }
+
+    async updateUsersWithRole(oldRole) {
+        const users = await this.db.collection('users')
+            .where('role', '==', oldRole)
+            .get();
+
+        const batch = this.db.batch();
+        users.docs.forEach(doc => {
+            batch.update(doc.ref, {
+                role: 'user',
+                roleLevel: this.roles.user.level,
+                permissions: this.roles.user.permissions,
+                roleUpdatedAt: this.timestamp,
+                roleUpdatedBy: this.currentUser
+            });
+        });
+
+        await batch.commit();
+    }
+
+    async logRoleChange(userId, roleName) {
+        await this.db.collection('role_logs').add({
+            type: 'role_assignment',
+            userId,
+            role: roleName,
+            timestamp: this.timestamp,
+            performedBy: this.currentUser
+        });
+    }
+
+    async logRoleCreation(roleName) {
+        await this.db.collection('role_logs').add({
+            type: 'role_creation',
+            role: roleName,
+            timestamp: this.timestamp,
+            performedBy: this.currentUser
+        });
+    }
+
+    async logRoleUpdate(roleName, updates) {
+        await this.db.collection('role_logs').add({
+            type: 'role_update',
+            role: roleName,
+            updates,
+            timestamp: this.timestamp,
+            performedBy: this.currentUser
+        });
+    }
+
+    async logRoleDelete(roleName) {
+        await this.db.collection('role_logs').add({
+            type: 'role_deletion',
+            role: roleName,
+            timestamp: this.timestamp,
+            performedBy: this.currentUser
+        });
+    }
+
+    async logRoleError(userId, roleName, error) {
+        await this.db.collection('role_logs').add({
+            type: 'role_error',
+            userId,
+            role: roleName,
+            error: {
+                message: error.message,
+                stack: error.stack
+            },
+            timestamp: this.timestamp,
+            performedBy: this.currentUser
+        });
+    }
+
+    async logPermissionCheck(userId, permission, granted, error = null) {
+        await this.db.collection('permission_logs').add({
+            userId,
+            permission,
+            granted,
+            error: error ? {
+                message: error.message,
+                stack: error.stack
+            } : null,
+            timestamp: this.timestamp
+        });
+    }
+}
+
+export { AuthRoles };
