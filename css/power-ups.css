@@ -1,0 +1,76 @@
+.power-up-animation {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.power-up-animation.pulse {
+    animation: powerUpPulse 0.5s ease-out;
+}
+
+.power-up-animation.sparkle {
+    animation: powerUpSparkle 1s ease-out;
+}
+
+.power-up-animation.shield {
+    animation: powerUpShield 0.8s ease-out;
+}
+
+.power-up-animation.clock {
+    animation: powerUpClock 0.7s ease-out;
+}
+
+@keyframes powerUpPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(2); opacity: 0.5; }
+    100% { transform: scale(3); opacity: 0; }
+}
+
+@keyframes powerUpSparkle {
+    0% { transform: scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: scale(2) rotate(180deg); opacity: 0; }
+}
+
+@keyframes powerUpShield {
+    0% { transform: scale(1); opacity: 1; filter: hue-rotate(0deg); }
+    50% { transform: scale(1.5); opacity: 0.7; filter: hue-rotate(180deg); }
+    100% { transform: scale(2); opacity: 0; filter: hue-rotate(360deg); }
+}
+
+@keyframes powerUpClock {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.5) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.power-up-effect {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.effect-shield {
+    animation: shieldEffect 1s ease-out;
+    background: radial-gradient(circle, transparent 0%, rgba(52, 152, 219, 0.2) 100%);
+}
+
+.effect-time {
+    animation: timeEffect 1s ease-out;
+    background: radial-gradient(circle, transparent 0%, rgba(46, 204, 113, 0.2) 100%);
+}
+
+@keyframes shieldEffect {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes timeEffect {
+    0% { transform: scale(1); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}

@@ -1,313 +1,228 @@
-import { PowerUpsSystem } from './power-ups.js';
-import { QuestionManager } from './question-manager.js';
-import { DatabaseManager } from './utils.js';
+import { auth } from './auth.js';
+import { Utils, DatabaseManager } from './utils.js';
 
-class GameManager {
+class Game {
     constructor() {
-        this.timestamp = "2025-02-01 16:38:08";
-        this.currentUser = "samul005";
-        
-        this.powerUps = new PowerUpsSystem();
-        this.questionManager = new QuestionManager();
-        this.dbManager = new DatabaseManager();
-        
-        this.currentMode = null;
-        this.currentQuestion = null;
-        this.remainingLives = 6;
+        this.mode = null;
+        this.difficulty = 'normal';
+        this.word = '';
+        this.guessedLetters = [];
+        this.remainingGuesses = 6;
         this.score = 0;
-        this.timer = null;
-        this.timeLeft = 0;
-        
-        // Game mode configurations
-        this.modeConfig = {
-            classic: { lives: 6, timeLimit: null },
-            lion: { lives: 6, timeLimit: null, wordLength: 4 },
-            time: {
-                simple: { lives: 6, timeLimit: 300 },
-                normal: { lives: 6, timeLimit: 120 },
-                hard: { lives: 6, timeLimit: 60 }
-            },
-            endless: { lives: 6, timeLimit: null },
-            extreme: { lives: 5, timeLimit: null }
+        this.coins = 0;
+        this.startTime = null;
+        this.endTime = null;
+        this.timerInterval = null;
+        this.elapsedTime = 0;
+        this.isGameOver = false;
+
+        this.wordList = {
+            classic: ['hangman', 'javascript', 'developer', 'interface', 'application', 'programming'],
+            time: ['algorithm', 'variable', 'function', 'asynchronous', 'debugging', 'parameter'],
+            endless: ['iteration', 'recursion', 'polymorphism', 'inheritance', 'encapsulation', 'abstraction'],
+            lion: ['code', 'test', 'bug', 'run', 'fix', 'add'],
+            extreme: ['cryptography', 'quantum', 'blockchain', 'artificial', 'intelligence', 'nanotechnology']
         };
 
-        this.initializeGame();
+        this.init();
     }
 
-    async initializeGame() {
-        // Get game mode from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        this.currentMode = urlParams.get('mode');
-        const difficulty = urlParams.get('difficulty');
-
-        // Initialize UI elements
-        this.setupGameUI();
-        
-        // Load user data
-        await this.loadUserData();
-        
-        // Initialize power-ups
-        await this.powerUps.initializePowerUps();
-        
-        // Start game with first question
-        await this.startNewGame(difficulty);
-    }
-
-    setupGameUI() {
-        // Update header info
-        document.querySelector('.timestamp').textContent = `🕒 ${this.timestamp}`;
-        document.querySelector('.username').textContent = `👤 ${this.currentUser}`;
-
-        // Setup keyboard
-        this.createKeyboard();
-        
-        // Add event listeners
-        this.addEventListeners();
-    }
-
-    createKeyboard() {
-        const keyboard = document.getElementById('keyboard');
-        const layout = [
-            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-            ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
-        ];
-
-        keyboard.innerHTML = layout.map(row => `
-            <div class="keyboard-row">
-                ${row.map(key => `
-                    <button class="key" data-key="${key}">${key}</button>
-                `).join('')}
-            </div>
-        `).join('');
-    }
-
-    addEventListeners() {
-        // Keyboard input
-        document.getElementById('keyboard').addEventListener('click', (e) => {
-            if (e.target.classList.contains('key')) {
-                this.handleGuess(e.target.dataset.key);
-            }
-        });
-
-        // Physical keyboard input
-        document.addEventListener('keyup', (e) => {
-            const key = e.key.toUpperCase();
-            if (/^[A-Z]$/.test(key)) {
-                this.handleGuess(key);
-            }
-        });
-
-        // Result modal buttons
-        document.getElementById('nextLevelBtn').addEventListener('click', 
-            () => this.startNewGame());
-        document.getElementById('retryBtn').addEventListener('click', 
-            () => this.retryCurrentLevel());
-        document.getElementById('homeBtn').addEventListener('click', 
-            () => window.location.href = 'index.html');
-    }
-
-    async startNewGame(difficulty = null) {
-        // Reset game state
-        this.resetGameState();
-        
-        // Get configuration for current mode
-        const config = difficulty ? 
-            this.modeConfig[this.currentMode][difficulty] : 
-            this.modeConfig[this.currentMode];
-        
-        // Initialize lives and timer
-        this.remainingLives = config.lives;
-        this.updateLives();
-        
-        if (config.timeLimit) {
-            this.startTimer(config.timeLimit);
+    async init() {
+        try {
+            await this.checkAuth();
+            this.loadGameState();
+            this.setupEventListeners();
+            this.startGame();
+        } catch (error) {
+            console.error('Game initialization failed:', error);
+            this.showError('Failed to initialize game');
         }
-        
-        // Get new question
-        await this.loadNewQuestion();
-        
-        // Enable keyboard
-        this.resetKeyboard();
     }
 
-    async loadNewQuestion() {
-        const question = await this.questionManager.getQuestionForLevel(this.currentLevel);
-        this.currentQuestion = question;
-        
-        // Update UI with question
-        document.getElementById('categoryBadge').textContent = question.category;
-        document.getElementById('questionText').textContent = question.question;
-        
-        // Initialize word display
-        this.updateWordDisplay();
+    async checkAuth() {
+        if (!auth.isAuthenticated()) {
+            const loginUrl = `/login.html?returnUrl=${encodeURIComponent(window.location.href)}`;
+            window.location.href = loginUrl;
+            throw new Error('Authentication required');
+        }
     }
 
-    updateWordDisplay(guessedLetter = null) {
+    loadGameState() {
+        const gameState = JSON.parse(localStorage.getItem('gameState'));
+        if (gameState) {
+            this.mode = gameState.mode;
+            this.difficulty = gameState.difficulty;
+        } else {
+            this.mode = 'classic';
+            this.difficulty = 'normal';
+        }
+    }
+
+    setupEventListeners() {
+        document.addEventListener('keydown', (event) => {
+            if (this.isGameOver) return;
+            if (event.key.match(/^[a-z]$/)) {
+                this.guessLetter(event.key);
+            }
+        });
+    }
+
+    startGame() {
+        this.resetGame();
+        this.selectWord();
+        this.updateUI();
+
+        if (this.mode === 'time') {
+            this.startTimer();
+        }
+    }
+
+    resetGame() {
+        this.guessedLetters = [];
+        this.remainingGuesses = 6;
+        this.score = 0;
+        this.coins = 0;
+        this.elapsedTime = 0;
+        this.startTime = null;
+        this.endTime = null;
+        this.isGameOver = false;
+
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+    }
+
+    selectWord() {
+        if (!this.wordList[this.mode]) {
+            this.mode = 'classic';
+        }
+        this.word = Utils.getRandomItem(this.wordList[this.mode]);
+    }
+
+    guessLetter(letter) {
+        letter = letter.toLowerCase();
+        if (this.guessedLetters.includes(letter)) {
+            return;
+        }
+        this.guessedLetters.push(letter);
+
+        if (!this.word.includes(letter)) {
+            this.remainingGuesses--;
+        }
+
+        this.updateUI();
+        this.checkGameStatus();
+    }
+
+    updateUI() {
         const wordDisplay = document.getElementById('wordDisplay');
-        const answer = this.currentQuestion.answer;
-        
-        wordDisplay.innerHTML = answer
-            .split('')
-            .map(letter => {
-                if (letter === ' ') return ' ';
-                if (guessedLetter === letter) return letter;
-                if (this.guessedLetters.has(letter)) return letter;
-                return '_';
-            })
-            .join(' ');
-    }
-
-    handleGuess(letter) {
-        if (this.gameOver || this.guessedLetters.has(letter)) return;
-        
-        this.guessedLetters.add(letter);
-        const key = document.querySelector(`[data-key="${letter}"]`);
-        
-        if (this.currentQuestion.answer.includes(letter)) {
-            // Correct guess
-            key.classList.add('correct');
-            this.playSound('correct');
-            this.updateWordDisplay(letter);
-            
-            // Check for win
-            if (this.checkWin()) {
-                this.handleWin();
-            }
-        } else {
-            // Wrong guess
-            key.classList.add('wrong');
-            this.playSound('wrong');
-            this.remainingLives--;
-            this.updateLives();
-            
-            if (this.remainingLives <= 0) {
-                this.handleLoss();
-            }
-        }
-    }
-
-    checkWin() {
-        return this.currentQuestion.answer
-            .split('')
-            .every(letter => letter === ' ' || this.guessedLetters.has(letter));
-    }
-
-    async handleWin() {
-        clearInterval(this.timer);
-        this.gameOver = true;
-        
-        // Calculate score and rewards
-        const timeBonus = this.timeLeft > 0 ? Math.floor(this.timeLeft / 10) : 0;
-        const reward = {
-            coins: 50 + timeBonus,
-            score: 100 + (timeBonus * 2)
-        };
-        
-        // Update user data
-        await this.dbManager.updateUserProgress(this.currentUser, {
-            coins: reward.coins,
-            score: reward.score,
-            gamesWon: 1
-        });
-        
-        // Show win animation and play sound
-        this.playSound('win');
-        this.showGameResult('win', reward);
-    }
-
-    handleLoss() {
-        clearInterval(this.timer);
-        this.gameOver = true;
-        
-        // Reveal answer
-        document.getElementById('wordDisplay').textContent = 
-            this.currentQuestion.answer;
-        
-        // Show loss animation
-        this.showGameResult('lose');
-    }
-
-    showGameResult(result, reward = null) {
-        const modal = document.getElementById('resultModal');
-        const message = document.getElementById('resultMessage');
-        
-        if (result === 'win') {
-            message.innerHTML = `
-                <h2>🎉 Congratulations!</h2>
-                <p>You solved the word correctly!</p>
-            `;
-            document.getElementById('finalScore').textContent = reward.score;
-            document.getElementById('coinsEarned').textContent = reward.coins;
-        } else {
-            message.innerHTML = `
-                <h2>😢 Game Over</h2>
-                <p>The word was: ${this.currentQuestion.answer}</p>
-            `;
-        }
-        
-        document.getElementById('finalTime').textContent = 
-            this.formatTime(this.timeLeft);
-        
-        modal.classList.add('active');
-    }
-
-    startTimer(duration) {
-        this.timeLeft = duration;
-        clearInterval(this.timer);
-        
+        const guessedLettersDisplay = document.getElementById('guessedLetters');
+        const remainingGuessesDisplay = document.getElementById('remainingGuesses');
+        const scoreDisplay = document.getElementById('score');
+        const coinsDisplay = document.getElementById('coins');
         const timerDisplay = document.getElementById('timer');
-        
-        this.timer = setInterval(() => {
-            this.timeLeft--;
-            timerDisplay.textContent = this.formatTime(this.timeLeft);
-            
-            if (this.timeLeft <= 10) {
-                timerDisplay.classList.add('warning');
+
+        wordDisplay.textContent = this.getDisplayedWord();
+        guessedLettersDisplay.textContent = `Guessed letters: ${this.guessedLetters.join(', ')}`;
+        remainingGuessesDisplay.textContent = `Remaining guesses: ${this.remainingGuesses}`;
+        scoreDisplay.textContent = `Score: ${this.score}`;
+        coinsDisplay.textContent = `Coins: ${this.coins}`;
+
+        if (timerDisplay) {
+            timerDisplay.textContent = `Time: ${this.formatTime(this.elapsedTime)}`;
+        }
+    }
+
+    getDisplayedWord() {
+        let displayedWord = '';
+        for (let letter of this.word) {
+            if (this.guessedLetters.includes(letter)) {
+                displayedWord += letter;
+            } else {
+                displayedWord += '_';
             }
-            
-            if (this.timeLeft <= 0) {
-                clearInterval(this.timer);
-                this.handleLoss();
-            }
-        }, 1000);
+            displayedWord += ' ';
+        }
+        return displayedWord.trim();
     }
 
-    formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    checkGameStatus() {
+        if (this.remainingGuesses <= 0) {
+            this.endGame(false);
+        }
+
+        if (!this.getDisplayedWord().includes('_')) {
+            this.endGame(true);
+        }
     }
 
-    playSound(type) {
-        const sound = document.getElementById(`${type}Sound`);
-        sound.currentTime = 0;
-        sound.play();
+    startTimer() {
+        this.startTime = Date.now();
+        this.timerInterval = setInterval(() => {
+            this.elapsedTime = Date.now() - this.startTime;
+            this.updateUI();
+        }, 100);
     }
 
-    resetGameState() {
-        this.gameOver = false;
-        this.guessedLetters = new Set();
-        clearInterval(this.timer);
-        document.querySelector('.timer')?.classList.remove('warning');
+    endTimer() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+        this.endTime = Date.now();
     }
 
-    resetKeyboard() {
-        document.querySelectorAll('.key').forEach(key => {
-            key.classList.remove('correct', 'wrong');
-            key.disabled = false;
-        });
+    formatTime(ms) {
+        let seconds = Math.floor(ms / 1000);
+        let minutes = Math.floor(seconds / 60);
+        seconds = seconds % 60;
+        let milliseconds = ms % 1000;
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
     }
 
-    async loadUserData() {
-        const userData = await this.dbManager.getUserData(this.currentUser);
-        this.currentLevel = userData.level || 1;
-        document.getElementById('currentLevel').textContent = this.currentLevel;
-        document.getElementById('currentCoins').textContent = userData.coins || 0;
+    async endGame(win) {
+        this.isGameOver = true;
+        this.endTimer();
+        let message = win ? 'You win!' : 'You lose!';
+        message += ` The word was ${this.word}.`;
+
+        if (win) {
+            this.score += 100;
+            this.coins += 50;
+        }
+
+        alert(message);
+        this.updateUI();
+
+        try {
+            const userId = auth.getCurrentUser().uid;
+            const databaseManager = new DatabaseManager();
+            await databaseManager.updateUserProgress(userId, {
+                coins: this.coins,
+                score: this.score,
+                gamesWon: win ? 1 : 0
+            });
+        } catch (error) {
+            console.error('Failed to update user progress:', error);
+            this.showError('Failed to save game progress');
+        }
+
+        this.startGame();
+    }
+
+    showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 3000);
     }
 }
 
-// Initialize game when document is ready
 document.addEventListener('DOMContentLoaded', () => {
-    new GameManager();
+    window.game = new Game();
 });

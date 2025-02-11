@@ -1,0 +1,419 @@
+
+:root {
+    --game-primary: #4834d4;
+    --game-secondary: #686de0;
+    --correct-color: #2ecc71;
+    --wrong-color: #e74c3c;
+    --hint-color: #f1c40f;
+}
+
+.game-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+
+.game-ui {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.lives-container {
+    text-align: center;
+    font-size: 1.5rem;
+    letter-spacing: 0.5rem;
+}
+
+.word-section {
+    text-align: center;
+}
+
+.word-display {
+    font-size: 2.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5rem;
+    margin: 2rem 0;
+}
+
+.category-badge {
+    display: inline-block;
+    background: var(--game-secondary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.game-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+
+.powerups {
+    display: flex;
+    gap: 1rem;
+}
+
+.powerup-btn {
+    background: var(--bg-secondary);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.powerup-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+}
+
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.keyboard-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.key {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 5px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.key:hover:not(:disabled) {
+    transform: scale(1.1);
+}
+
+.key.correct {
+    background: var(--correct-color);
+    color: white;
+}
+
+.key.wrong {
+    background: var(--wrong-color);
+    color: white;
+}
+
+.multiplier {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--game-primary);
+}
+
+.timer {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.timer.warning {
+    color: var(--wrong-color);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.result-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .word-display {
+        font-size: 2rem;
+    }
+
+    .key {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+
+    .game-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+/* Mode-specific styles */
+.mode-classic .game-ui {
+    /* Classic mode styling */
+}
+
+.mode-time .game-ui {
+    /* Time attack mode styling */
+}
+
+.mode-endless .streak-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.floating-score {
+    position: absolute;
+    animation: floatUp 1s ease-out;
+    color: var(--success-color);
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.bonus-alert {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-50px); opacity: 0; }
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* Add to existing game.css */
+
+.power-ups-panel {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.9);
+    border-radius: 15px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.power-ups-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.power-up-item {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.power-up-item:hover {
+    transform: scale(1.1);
+}
+
+.power-up-icon {
+    font-size: 1.5rem;
+}
+
+.power-up-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.buy-more-btn {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Power-up Animations */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes sparkle {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.5); }
+    100% { filter: brightness(1); }
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 5px var(--accent-color); }
+    50% { box-shadow: 0 0 20px var(--accent-color); }
+    100% { box-shadow: 0 0 5px var(--accent-color); }
+}
+
+/* ...add more animations... */
+
+/* Rewards Button and Modal */
+.rewards-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    cursor: pointer;
+    z-index: 100;
+}
+
+.rewards-icon {
+    font-size: 2rem;
+    animation: bounce 2s infinite;
+}
+
+.rewards-tooltip {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: var(--bg-primary);
+    padding: 0.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    display: none;
+}
+
+.rewards-button:hover .rewards-tooltip {
+    display: block;
+}
+
+.rewards-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.rewards-content {
+    background: var(--bg-primary);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.streak-display {
+    margin: 1rem 0;
+}
+
+.streak-progress {
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.streak-bar {
+    height: 100%;
+    background: var(--accent-color);
+    transition: width 0.3s ease;
+}
+
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.reward-item {
+    padding: 1rem;
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    text-align: center;
+}
+
+.reward-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}

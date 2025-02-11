@@ -3,54 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store | Ultimate Hangman Challenge</title>
+    <title>Store - Ultimate Hangman</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/store.css">
 </head>
 <body>
-    <header class="store-header">
+    <header class="main-header">
         <div class="header-content">
             <a href="index.html" class="back-btn">
                 <i class="fas fa-arrow-left"></i>
             </a>
-            <h1>Store</h1>
+            <div class="store-nav">
+                <button class="tab-btn active" data-tab="powerups">
+                    <i class="fas fa-bolt"></i> Power-ups
+                </button>
+                <button class="tab-btn" data-tab="avatars">
+                    <i class="fas fa-user-circle"></i> Avatars
+                </button>
+                <button class="tab-btn" data-tab="themes">
+                    <i class="fas fa-palette"></i> Themes
+                </button>
+            </div>
             <div class="user-info">
-                <span class="timestamp">🕒 2025-02-01 16:39:53</span>
-                <span class="username">👤 samul005</span>
-                <span class="coins">🌀 <span id="userCoins">0</span></span>
+                <span class="coin-display">
+                    <i class="fas fa-coins"></i>
+                    <span id="userCoins">0</span>
+                </span>
             </div>
         </div>
     </header>
 
     <main class="store-container">
-        <div class="store-tabs">
-            <button class="tab-btn active" data-tab="powerups">
-                <i class="fas fa-bolt"></i> Power-ups
-            </button>
-            <button class="tab-btn" data-tab="themes">
-                <i class="fas fa-paint-brush"></i> Themes
-            </button>
-            <button class="tab-btn" data-tab="avatars">
-                <i class="fas fa-user-circle"></i> Avatars
-            </button>
-        </div>
+        <div class="store-sections">
+            <!-- Power-ups Section -->
+            <section id="powerupsSection" class="store-section active">
+                <div class="section-grid"></div>
+            </section>
 
-        <div class="tab-content active" id="powerupsTab">
-            <div class="store-grid" id="powerupsGrid"></div>
-        </div>
+            <!-- Avatars Section -->
+            <section id="avatarsSection" class="store-section">
+                <div class="section-grid"></div>
+            </section>
 
-        <div class="tab-content" id="themesTab">
-            <div class="store-grid" id="themesGrid"></div>
-        </div>
-
-        <div class="tab-content" id="avatarsTab">
-            <div class="store-grid" id="avatarsGrid"></div>
+            <!-- Themes Section -->
+            <section id="themesSection" class="store-section">
+                <div class="section-grid"></div>
+            </section>
         </div>
     </main>
 
-    <!-- Purchase Modal -->
-    <div class="modal" id="purchaseModal">
+    <!-- Purchase Confirmation Modal -->
+    <div id="purchaseModal" class="modal">
         <div class="modal-content">
             <h2>Confirm Purchase</h2>
             <div class="item-preview" id="itemPreview"></div>
@@ -95,4 +100,4 @@
     <!-- Store Scripts -->
     <script type="module" src="js/store.js"></script>
 </body>
-              </html>
+</html>

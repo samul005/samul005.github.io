@@ -1,5 +1,44 @@
 import { DatabaseManager } from './utils.js';
 
+class Auth {
+    constructor() {
+        this.firebaseAuth = firebase.auth();
+        this.user = null;
+    }
+
+    async init() {
+        return new Promise((resolve, reject) => {
+            this.firebaseAuth.onAuthStateChanged(user => {
+                if (user) {
+                    this.user = user;
+                    console.log('User is authenticated:', user.uid);
+                    resolve();
+                } else {
+                    console.log('No user is authenticated');
+                    reject(new Error('No user is authenticated'));
+                }
+            }, error => {
+                console.error('Authentication error:', error);
+                reject(error);
+            });
+        });
+    }
+
+    isAuthenticated() {
+        return !!this.user;
+    }
+
+    getCurrentUser() {
+        return this.user;
+    }
+
+    signOut() {
+        return this.firebaseAuth.signOut();
+    }
+}
+
+export const auth = new Auth();
+
 class AuthenticationSystem {
     constructor() {
         this.timestamp = "2025-02-02 04:33:17";
@@ -13,6 +52,12 @@ class AuthenticationSystem {
         this.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         
         this.setupAuthListeners();
+
+        this.connectionStatus = {
+            online: navigator.onLine,
+            lastSync: null
+        };
+        this.monitorConnection();
     }
 
     setupAuthListeners() {
@@ -282,9 +327,30 @@ class AuthenticationSystem {
             return false;
         }
     }
+
+    monitorConnection() {
+        window.addEventListener('online', () => {
+            this.connectionStatus.online = true;
+            this.handleReconnect();
+        });
+
+        window.addEventListener('offline', () => {
+            this.connectionStatus.online = false;
+            this.handleDisconnect();
+        });
+    }
+
+    async handleReconnect() {
+        try {
+            await this.syncOfflineChanges();
+            this.showToast('Connection restored', 'success');
+        } catch (error) {
+            console.error('Sync failed:', error);
+        }
+    }
 }
 
 // Initialize authentication system when document is ready
-document.addEventListener('DOMContentLoaded', () => {
-    new AuthenticationSystem();
+document.addEventListener('DOMContentLoaded', function() { // Changed arrow function to regular
+    window.authSystem = new AuthenticationSystem();
 });

@@ -10,6 +10,10 @@ import { DatabaseMonitor } from './js/utils/database-monitor.js';
 import { DatabaseCache } from './js/utils/database-cache.js';
 import { DatabaseSecurity } from './js/utils/database-security.js';
 import { Logger } from './js/utils/logger.js';
+import { auth } from './auth.js';
+
+// Add default avatar constant at the top of the file
+const DEFAULT_AVATAR_URL = 'https://res.cloudinary.com/dboxc3yay/image/upload/v1738586416/6493175011714470428_jgjnsq.png';
 
 class App {
     constructor() {
@@ -35,6 +39,36 @@ class App {
         
         // Start application monitoring
         this.startMonitoring();
+
+        // Update user profile
+        this.updateUserProfile();
+
+        this.loadingStates = new Map();
+        this.errorStates = new Map();
+        this.initializeApp();
+    }
+
+    async initializeApp() {
+        this.setLoading('app', true);
+        try {
+            await this.dbManager.initialize();
+            await this.loadInitialData();
+            this.setupAutoRefresh();
+        } catch (error) {
+            this.setError('app', error);
+        } finally {
+            this.setLoading('app', false);
+        }
+    }
+
+    setLoading(key, isLoading) {
+        this.loadingStates.set(key, isLoading);
+        this.updateLoadingUI();
+    }
+
+    setError(key, error) {
+        this.errorStates.set(key, error);
+        this.updateErrorUI();
     }
 
     async initializeServices() {
@@ -289,8 +323,63 @@ class App {
     showErrorNotification(message) {
         this.showNotification(message, 'error');
     }
+
+    updateProfileHeader(userData) {
+        // Update avatar with new default
+        const avatar = document.getElementById('userAvatar');
+        if (avatar) {
+            avatar.src = userData.avatar || DEFAULT_AVATAR_URL;
+        }
+        // ...existing code...
+    }
+
+    async updateUserProfile() {
+        try {
+            const userBalance = await this.dbManager.getUserBalance(this.currentUser);
+            
+            // Update coin amount with animation
+            const coinAmount = document.getElementById('coinAmount');
+            if (coinAmount) {
+                this.animateNumber(
+                    parseInt(coinAmount.textContent.replace(/,/g, '')) || 0,
+                    userBalance.coins,
+                    coinAmount
+                );
+            }
+
+            // Update username
+            const usernameDisplay = document.getElementById('usernameDisplay');
+            if (usernameDisplay) {
+                usernameDisplay.textContent = userBalance.username;
+            }
+
+        } catch (error) {
+            console.error('Failed to update profile:', error);
+        }
+    }
+
+    animateNumber(start, end, element) {
+        const duration = 1000;
+        const steps = 60;
+        const increment = (end - start) / steps;
+        let current = start;
+
+        const updateNumber = () => {
+            current += increment;
+            if ((increment > 0 && current >= end) || 
+                (increment < 0 && current <= end)) {
+                element.textContent = end.toLocaleString();
+                return;
+            }
+            element.textContent = Math.round(current).toLocaleString();
+            requestAnimationFrame(updateNumber);
+        };
+
+        requestAnimationFrame(updateNumber);
+    }
 }
 
 // Initialize application
-const app = new App();
-export default app;
+document.addEventListener('DOMContentLoaded', () => {
+    window.app = new App();
+});

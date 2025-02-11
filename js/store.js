@@ -1,297 +1,197 @@
+import { StoreItems } from './config/store-config.js';
 import { DatabaseManager } from './utils.js';
+import { PurchaseModal } from './components/purchase-modal.js';
+import { SuccessAnimation } from './components/success-animation.js';
 
 class StoreManager {
     constructor() {
-        this.timestamp = "2025-02-01 16:42:30";
-        this.currentUser = "samul005";
         this.dbManager = new DatabaseManager();
-        
-        // Store items configuration
-        this.storeItems = {
-            powerups: {
-                secondChance: {
-                    id: 'secondChance',
-                    name: 'Second Chance',
-                    icon: '🔄',
-                    description: 'Get one extra life after losing',
-                    price: 75,
-                    type: 'powerup'
-                },
-                revealLetter: {
-                    id: 'revealLetter',
-                    name: 'Reveal Letter',
-                    icon: '🕵️',
-                    description: 'Automatically reveal a correct letter',
-                    price: 50,
-                    type: 'powerup'
-                },
-                extraHint: {
-                    id: 'extraHint',
-                    name: 'Extra Hint',
-                    icon: '💡',
-                    description: 'Unlock additional hints for the word',
-                    price: 25,
-                    type: 'powerup'
-                },
-                timeBoost: {
-                    id: 'timeBoost',
-                    name: 'Time Boost',
-                    icon: '⏳',
-                    description: 'Add 30 seconds in Time Challenge Mode',
-                    price: 50,
-                    type: 'powerup'
-                },
-                shield: {
-                    id: 'shield',
-                    name: 'Shield',
-                    icon: '🛡️',
-                    description: 'Protect against one wrong guess',
-                    price: 75,
-                    type: 'powerup',
-                    premium: true
-                }
-            },
-            themes: {
-                neon: {
-                    id: 'neon',
-                    name: 'Neon Theme',
-                    icon: '🌈',
-                    description: 'Vibrant neon colors and glowing effects',
-                    price: 200,
-                    type: 'theme'
-                },
-                space: {
-                    id: 'space',
-                    name: 'Space Theme',
-                    icon: '🚀',
-                    description: 'Dark space theme with star effects',
-                    price: 250,
-                    type: 'theme',
-                    premium: true
-                },
-                retro: {
-                    id: 'retro',
-                    name: 'Retro Theme',
-                    icon: '👾',
-                    description: 'Classic 8-bit style design',
-                    price: 150,
-                    type: 'theme'
-                }
-            },
-            avatars: {
-                ninja: {
-                    id: 'ninja',
-                    name: 'Ninja Avatar',
-                    icon: '🥷',
-                    description: 'Stealthy ninja character',
-                    price: 100,
-                    type: 'avatar'
-                },
-                wizard: {
-                    id: 'wizard',
-                    name: 'Wizard Avatar',
-                    icon: '🧙‍♂️',
-                    description: 'Magical wizard character',
-                    price: 100,
-                    type: 'avatar'
-                },
-                robot: {
-                    id: 'robot',
-                    name: 'Robot Avatar',
-                    icon: '🤖',
-                    description: 'Mechanical robot character',
-                    price: 150,
-                    type: 'avatar',
-                    premium: true
-                }
-            }
-        };
+        this.items = StoreItems;
+        this.init();
 
-        this.initializeStore();
+        this.purchaseModal = new PurchaseModal(async () => {
+            await this.completePurchase();
+        });
+        this.successAnimation = new SuccessAnimation();
+        this.pendingPurchase = null;
     }
 
-    async initializeStore() {
-        // Load user data
-        await this.loadUserData();
-        
-        // Setup store UI
-        this.setupStoreTabs();
-        this.loadStoreItems();
-        this.setupEventListeners();
-    }
-
-    async loadUserData() {
+    async init() {
         try {
-            const userData = await this.dbManager.getUserData(this.currentUser);
-            document.getElementById('userCoins').textContent = userData.coins || 0;
-            this.userCoins = userData.coins || 0;
-            this.userInventory = userData.inventory || {};
+            await this.loadUserData();
+            this.renderCategories();
+            this.setupEventListeners();
+            this.updateCoinsDisplay();
         } catch (error) {
-            console.error('Error loading user data:', error);
+            console.error('Store initialization failed:', error);
+            this.showError('Failed to load store');
         }
     }
 
-    setupStoreTabs() {
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs
-                tabs.forEach(t => t.classList.remove('active'));
-                // Add active class to clicked tab
-                tab.classList.add('active');
-                
-                // Show corresponding content
-                const tabContents = document.querySelectorAll('.tab-content');
-                tabContents.forEach(content => content.classList.remove('active'));
-                document.getElementById(`${tab.dataset.tab}Tab`).classList.add('active');
-                
-                // Load items for selected category
-                this.loadStoreItems(tab.dataset.tab);
-            });
-        });
+    async loadUserData() {
+        const userData = await this.dbManager.getUserData();
+        this.userCoins = userData.coins || 0;
+        this.userInventory = userData.inventory || {};
     }
 
-    loadStoreItems(category = 'powerups') {
-        const grid = document.getElementById(`${category}Grid`);
-        const items = this.storeItems[category];
-        
-        grid.innerHTML = Object.values(items).map(item => `
-            <div class="store-item ${item.premium ? 'premium-item' : ''}">
-                ${item.premium ? '<span class="premium-badge">Premium</span>' : ''}
-                <div class="item-icon">${item.icon}</div>
+    renderCategories() {
+        // Render Power-ups
+        this.renderSection('powerUps', 'powerupsSection');
+        // Render Themes
+        this.renderSection('themes', 'themesSection');
+        // Render Avatars
+        this.renderSection('avatars', 'avatarsSection');
+    }
+
+    renderSection(category, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const items = this.items[category];
+        container.innerHTML = Object.values(items).map(item => `
+            <div class="store-item" data-id="${item.id}">
+                ${item.preview ? `
+                    <div class="preview-container">
+                        <img src="${item.preview}" alt="${item.name}">
+                    </div>
+                ` : `
+                    <div class="item-icon">${item.icon}</div>
+                `}
                 <h3 class="item-name">${item.name}</h3>
                 <p class="item-description">${item.description}</p>
-                <div class="item-price">
-                    ${item.discount ? `
-                        <span class="price-discount">${item.price}🌀</span>
-                        <span>${Math.floor(item.price * (1 - item.discount))}🌀</span>
-                    ` : `
-                        <span>${item.price}🌀</span>
-                    `}
-                </div>
-                <button class="buy-btn" 
-                        data-item-id="${item.id}"
-                        data-item-type="${item.type}"
-                        ${this.userCoins < item.price ? 'disabled' : ''}>
-                    ${this.userInventory[item.id] ? 'Owned' : 'Buy Now'}
-                </button>
+                ${this.renderPrice(item)}
+                ${this.renderPurchaseButton(item)}
             </div>
         `).join('');
     }
 
+    renderPrice(item) {
+        const isOwned = this.userInventory[item.id];
+        if (isOwned && item.type !== 'consumable') {
+            return '<div class="item-price owned">Owned</div>';
+        }
+
+        return `
+            <div class="item-price">
+                ${item.price === 0 ? 'Free' : `
+                    <span class="price-amount">${item.price}</span>
+                    <span class="coin-icon">🌀</span>
+                `}
+            </div>
+        `;
+    }
+
+    renderPurchaseButton(item) {
+        const isOwned = this.userInventory[item.id];
+        const canAfford = this.userCoins >= item.price;
+        const isLocked = item.requiredLevel && this.userLevel < item.requiredLevel;
+
+        if (isOwned && item.type !== 'consumable') {
+            return '<button class="purchase-btn owned" disabled>Owned</button>';
+        }
+
+        if (isLocked) {
+            return `
+                <button class="purchase-btn locked" disabled>
+                    Unlock at Level ${item.requiredLevel}
+                </button>
+            `;
+        }
+
+        return `
+            <button class="purchase-btn ${!canAfford ? 'disabled' : ''}" 
+                    ${!canAfford ? 'disabled' : ''}
+                    data-id="${item.id}">
+                ${canAfford ? 'Purchase' : 'Not enough coins'}
+            </button>
+        `;
+    }
+
+    updateCoinsDisplay() {
+        const coinsDisplay = document.getElementById('userCoins');
+        if (coinsDisplay) {
+            coinsDisplay.textContent = this.userCoins.toLocaleString();
+        }
+    }
+
     setupEventListeners() {
-        // Purchase buttons
-        document.querySelectorAll('.buy-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const itemId = e.target.dataset.itemId;
-                const itemType = e.target.dataset.itemType;
-                await this.handlePurchase(itemId, itemType);
-            });
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
         });
 
-        // Modal buttons
-        document.getElementById('confirmPurchase').addEventListener('click',
-            () => this.confirmPurchase());
-        document.getElementById('cancelPurchase').addEventListener('click',
-            () => this.cancelPurchase());
+        // Purchase buttons
+        document.querySelectorAll('.purchase-btn:not([disabled])').forEach(btn => {
+            btn.addEventListener('click', (e) => this.handlePurchase(e));
+        });
     }
 
-    async handlePurchase(itemId, itemType) {
-        const item = this.storeItems[itemType + 's'][itemId];
-        
-        if (!item || this.userInventory[itemId]) return;
-        
-        const finalPrice = item.discount ? 
-            Math.floor(item.price * (1 - item.discount)) : 
-            item.price;
-            
-        if (this.userCoins < finalPrice) {
-            this.showNotEnoughCoinsError();
-            return;
-        }
-
-        // Show confirmation modal
-        this.showPurchaseConfirmation(item, finalPrice);
+    switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabId);
+        });
+        document.querySelectorAll('.store-section').forEach(section => {
+            section.classList.toggle('active', section.id === `${tabId}Section`);
+        });
     }
 
-    showPurchaseConfirmation(item, price) {
-        const modal = document.getElementById('purchaseModal');
-        const preview = document.getElementById('itemPreview');
-        const priceInfo = document.getElementById('priceInfo');
-        
-        preview.innerHTML = `
-            <div class="item-icon">${item.icon}</div>
-            <h3>${item.name}</h3>
-            <p>${item.description}</p>
-        `;
-        
-        priceInfo.innerHTML = `
-            <p>Price: ${price}🌀</p>
-            <p>Your Balance: ${this.userCoins}🌀</p>
-            <p>Remaining Balance: ${this.userCoins - price}🌀</p>
-        `;
-        
-        this.pendingPurchase = { item, price };
-        modal.classList.add('active');
-    }
-
-    async confirmPurchase() {
-        if (!this.pendingPurchase) return;
-        
-        const { item, price } = this.pendingPurchase;
-        
+    async handlePurchase(itemId) {
         try {
-            // Update user data in database
-            await this.dbManager.updateUserData(this.currentUser, {
-                coins: this.userCoins - price,
-                [`inventory.${item.id}`]: true
-            });
-            
-            // Update local data
-            this.userCoins -= price;
-            this.userInventory[item.id] = true;
-            
-            // Update UI
-            document.getElementById('userCoins').textContent = this.userCoins;
-            this.loadStoreItems(item.type + 's');
-            
-            // Show success animation
-            this.showSuccessAnimation();
+            const item = this.findItem(itemId);
+            if (!item) throw new Error('Item not found');
+
+            // Check if user can afford
+            if (this.userCoins < item.price) {
+                throw new Error('Not enough coins');
+            }
+
+            this.pendingPurchase = item;
+            this.purchaseModal.show(item, this.userCoins);
         } catch (error) {
-            console.error('Purchase failed:', error);
-            this.showErrorMessage('Purchase failed. Please try again.');
+            this.showError(error.message);
         }
-        
-        // Close modal
-        document.getElementById('purchaseModal').classList.remove('active');
-        this.pendingPurchase = null;
     }
 
-    cancelPurchase() {
-        document.getElementById('purchaseModal').classList.remove('active');
-        this.pendingPurchase = null;
+    async completePurchase() {
+        if (!this.pendingPurchase) return;
+
+        try {
+            const result = await this.dbManager.purchaseItem(
+                this.currentUser.uid,
+                this.pendingPurchase.id
+            );
+
+            if (result.success) {
+                // Update local state
+                this.userCoins -= this.pendingPurchase.price;
+                this.updateCoinsDisplay();
+                this.updateItemDisplay(this.pendingPurchase.id);
+
+                // Show success animation
+                this.successAnimation.show();
+
+                // Clear pending purchase
+                this.pendingPurchase = null;
+            }
+        } catch (error) {
+            this.showError(error.message);
+        }
     }
 
-    showSuccessAnimation() {
-        const animation = document.getElementById('successAnimation');
-        animation.style.display = 'block';
-        
-        setTimeout(() => {
-            animation.style.display = 'none';
-        }, 3000);
+    updateItemDisplay(itemId) {
+        const itemElement = document.querySelector(`[data-id="${itemId}"]`);
+        if (!itemElement) return;
+
+        if (this.pendingPurchase.type === 'consumable') {
+            const countElement = itemElement.querySelector('.power-up-count');
+            const currentCount = parseInt(countElement.textContent);
+            countElement.textContent = currentCount + 1;
+        } else {
+            itemElement.innerHTML = this.renderOwnedItem(this.pendingPurchase);
+        }
     }
 
-    showNotEnoughCoinsError() {
-        const notification = document.createElement('div');
-        notification.className = 'error-notification';
-        notification.textContent = 'Not enough coins!';
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
+    // ...rest of existing code...
 }
 
 // Initialize store when document is ready
